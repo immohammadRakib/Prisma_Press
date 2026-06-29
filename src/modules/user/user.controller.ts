@@ -3,6 +3,8 @@ import httpStatus from "http-status";
 import { userService } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import { jwtUtils } from "../../utils/jwt";
+import config from "../../config";
 
 
 
@@ -28,7 +30,7 @@ import { sendResponse } from "../../utils/sendResponse";
 // }
 
 
-const registerUser = catchAsync( async (req: Request, res: Response, next: Function) => {
+const registerUser = catchAsync( async ( req: Request, res: Response, next: Function ) => {
     const payload = req.body;
 
     const user  = await userService.registerUserIntoDB(payload);
@@ -42,6 +44,27 @@ const registerUser = catchAsync( async (req: Request, res: Response, next: Funct
 });
 
 
+const getMyProfile = catchAsync( async ( req: Request, res: Response, next: Function ) => {
+    const { accessToken } = req.cookies
+
+    
+    const verifiedToken = jwtUtils.verifyToken( accessToken, config.jwt_access_secret)
+ 
+    if( typeof verifiedToken === 'string' ){
+        throw new Error( verifiedToken )
+    }
+
+    const profile = await userService.getMyProfileIntoDB(verifiedToken.id)
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "User registered successfully",
+        data: { profile }
+    })
+})
+
 export const userController = {
-    registerUser
+    registerUser,
+    getMyProfile
 }
