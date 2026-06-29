@@ -1,8 +1,10 @@
 import { threadCpuUsage } from "node:process";
 import { prisma } from "../../lib/prisma";
 import { ILoginUser } from "./auth.interface"
-import  jwt  from "jsonwebtoken";
+import  jwt, { SignOptions }  from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import config from "../../config";
+import { jwtUtils } from "../../utils/jwt";
 
 
 const loginUser = async ( payload: ILoginUser) => {
@@ -22,25 +24,16 @@ const loginUser = async ( payload: ILoginUser) => {
         throw new Error("password doesn't match")
     }
 
-    const accessToken = jwt.sign({
+    const jwtPayload = {
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role
-    }, 'accesscrete', {
-        expiresIn: "1d"
-    })
+    }
 
+    const accessToken = jwtUtils.createToken( jwtPayload, config.jwt_access_secret, config.jwt_access_expiration as SignOptions )
 
-    const refreshToken = jwt.sign({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-    }, 'refreshsecrete', {
-        expiresIn: "7d"
-    })
-    
+    const refreshToken = jwtUtils.createToken( jwtPayload, config.jwt_refresh_secret, config.jwt_refresh_expiration as SignOptions )
     
     
     return { accessToken, refreshToken };
