@@ -9,3 +9,15 @@ enum Role {
     USER 
     AUTHOR
 }
+
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CommentStatus {
+  APPROVED
+  REJECT
+}
